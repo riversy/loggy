@@ -3,33 +3,83 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/totherme/unstructured"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 type AppConfig struct {
-	config, keyPath, scope, remotePath, localPath string
-	isTail, isHead                                bool
-	num                                           int
+	ConfigPath, KeyPath, Scope, RemotePath, LocalPath string
+	IsTail, IsHead                                    bool
+	NumOfLines                                        int
 }
 
 var appCfg = &AppConfig{}
 
-func main() {
-	flag.StringVar(&appCfg.config, "c", "~/.config/loggy/inventory.yml", "")
-	flag.StringVar(&appCfg.keyPath, "i", "~/.ssh/id_rsa", "")
+func initConfig() {
+	flag.StringVar(&appCfg.ConfigPath, "p", "~/.config/loggy/pool.yml", "")
+	flag.StringVar(&appCfg.KeyPath, "i", "~/.ssh/id_rsa", "")
 
-	flag.BoolVar(&appCfg.isHead, "head", false, "")
-	flag.BoolVar(&appCfg.isTail, "tail", false, "")
+	flag.BoolVar(&appCfg.IsHead, "head", false, "")
+	flag.BoolVar(&appCfg.IsTail, "tail", false, "")
 
-	flag.IntVar(&appCfg.num, "n", 10, "")
+	flag.IntVar(&appCfg.NumOfLines, "n", 10, "")
 
 	if len(os.Args) != 4 {
-		panic("usage should be the following: loggy [scope] [remote_file] [local_file]")
+		panic("usage should be the following: loggy [Scope] [remote_file] [local_file]")
 	}
 
-	appCfg.scope = os.Args[1]
-	appCfg.remotePath = os.Args[2]
-	appCfg.localPath = os.Args[3]
+	appCfg.Scope = os.Args[1]
+	appCfg.RemotePath = os.Args[2]
+	appCfg.LocalPath = os.Args[3]
 
-	fmt.Println(appCfg)
+	appCfg.KeyPath, _ = filepath.Abs(GetFullKeyPath(appCfg.KeyPath))
+	appCfg.ConfigPath, _ = filepath.Abs(GetFullKeyPath(appCfg.ConfigPath))
+	appCfg.LocalPath, _ = filepath.Abs(GetFullKeyPath(appCfg.LocalPath))
+}
+
+func GetHosts() []string {
+	configYaml, err := os.ReadFile(appCfg.ConfigPath)
+	if err != nil {
+		panic(err)
+	}
+
+	poolData, err := unstructured.ParseYAML(string(configYaml))
+	if err != nil {
+		panic(err)
+	}
+
+	poolPayloadData, err := poolData.GetByPointer("/foo/staging")
+	if err != nil {
+		panic(err)
+	}
+
+	if !poolPayloadData.IsList() {
+		panic("scoped value has to be list")
+	}
+
+	hostsList, err := poolPayloadData.ListValue()
+	if err != nil {
+		panic(err)
+	}
+
+	hosts := make([]string, len(hostsList))
+	for i, v := range hostsList {
+		hosts[i] = v.UnsafeStringValue()
+	}
+
+	return hosts
+}
+
+func main() {
+	initConfig()
+
+	hosts := GetHosts()
+
+	fmt.Println(hosts)
+}
+
+func GetFullKeyPath(keyPath string) string {
+	return strings.Replace(keyPath, "~", os.Getenv("HOME"), 1)
 }

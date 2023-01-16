@@ -11,17 +11,18 @@ loggy [scope] [remote_file] [local_file]
 
 ### Config
 
-The config has to be stored in the `~/.config/loggy/inventory.yml` file.
+The pool of SSH nodes has to be stored in the `~/.config/loggy/pool.yml` file 
+in the structured way to get accessed by the scope argument.
 
 ```yml
 foo:
   staging:
-    user@node1.example.com
-    user@node2.example.com
-    user@node3.example.com
+    - user@node1.example.com
+    - user@node2.example.com
+    - user@node3.example.com
   production:
-    user1@node.example.com:2222
-    user2@node.example.com:2223
+    - user1@node.example.com:2222
+    - user2@node.example.com:2223
 ```
 
 ### Commands Example
@@ -43,7 +44,7 @@ loggy foo.staging -i ~/.ssh/custom_rsa var/log/system.log system.log
 ```
 
 ```bash 
-loggy foo.staging -c ~/inventory.yml var/log/system.log system.log
+loggy foo.staging -p ~/pool.yml var/log/system.log system.log
 ```
 
 ## Test
