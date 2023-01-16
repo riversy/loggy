@@ -58,7 +58,7 @@ func getHosts() []string {
 		panic(err)
 	}
 
-	poolPayloadData, err := poolData.GetByPointer("/foo/staging")
+	poolPayloadData, err := poolData.GetByPointer(appCfg.Scope)
 	if err != nil {
 		panic(err)
 	}

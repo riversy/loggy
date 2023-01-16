@@ -28,23 +28,23 @@ foo:
 ### Commands Example
 
 ```bash
-loggy foo.staging var/log/system.log system.log
+loggy /foo/staging var/log/system.log system.log
 ```
 
 ```bash
-loggy foo.staging --tail -n 1000 var/log/system.log system.log
+loggy /foo/staging --tail -n 1000 var/log/system.log system.log
 ```
 
 ```bash
-loggy foo.production --head -n 1000 /var/www/html/var/log/system.log ~/Downloads/system.log
+loggy /foo/staging --head -n 1000 /var/www/html/var/log/system.log ~/Downloads/system.log
 ```
 
 ```bash
-loggy foo.staging -i ~/.ssh/custom_rsa var/log/system.log system.log
+loggy /foo/staging -i ~/.ssh/custom_rsa var/log/system.log system.log
 ```
 
 ```bash 
-loggy foo.staging -p ~/pool.yml var/log/system.log system.log
+loggy /foo/staging -p ~/pool.yml var/log/system.log system.log
 ```
 
 ## Test
