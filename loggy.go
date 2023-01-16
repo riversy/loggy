@@ -34,12 +34,20 @@ func initConfig() {
 	appCfg.RemotePath = os.Args[2]
 	appCfg.LocalPath = os.Args[3]
 
-	appCfg.KeyPath, _ = filepath.Abs(GetFullKeyPath(appCfg.KeyPath))
-	appCfg.ConfigPath, _ = filepath.Abs(GetFullKeyPath(appCfg.ConfigPath))
-	appCfg.LocalPath, _ = filepath.Abs(GetFullKeyPath(appCfg.LocalPath))
+	appCfg.KeyPath, _ = filepath.Abs(getFullKeyPath(appCfg.KeyPath))
+	appCfg.ConfigPath, _ = filepath.Abs(getFullKeyPath(appCfg.ConfigPath))
+	appCfg.LocalPath, _ = filepath.Abs(getFullKeyPath(appCfg.LocalPath))
 }
 
-func GetHosts() []string {
+func main() {
+	initConfig()
+
+	hosts := getHosts()
+
+	fmt.Println(hosts)
+}
+
+func getHosts() []string {
 	configYaml, err := os.ReadFile(appCfg.ConfigPath)
 	if err != nil {
 		panic(err)
@@ -72,14 +80,6 @@ func GetHosts() []string {
 	return hosts
 }
 
-func main() {
-	initConfig()
-
-	hosts := GetHosts()
-
-	fmt.Println(hosts)
-}
-
-func GetFullKeyPath(keyPath string) string {
+func getFullKeyPath(keyPath string) string {
 	return strings.Replace(keyPath, "~", os.Getenv("HOME"), 1)
 }
