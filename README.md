@@ -1,2 +1,53 @@
-# loggy
-Log files, the reader of the files with the same name spread through the hosts in the cloud. 
+Loggy
+=====
+Log files, the reader of the files with the same name spread through the hosts in the cloud.
+
+## Usage
+
+```bash
+loggy [scope] [remote_file] [local_file]
+
+```
+
+### Config
+
+The config has to be stored in the `~/.config/loggy/inventory.yml` file.
+
+```yml
+foo:
+  staging:
+    user@node1.example.com
+    user@node2.example.com
+    user@node3.example.com
+  production:
+    user1@node.example.com:2222
+    user2@node.example.com:2223
+```
+
+### Commands Example
+
+```bash
+loggy foo.staging var/log/system.log system.log
+```
+
+```bash
+loggy foo.staging --tail -n 1000 var/log/system.log system.log
+```
+
+```bash
+loggy foo.production --head -n 1000 /var/www/html/var/log/system.log ~/Downloads/system.log
+```
+
+```bash
+loggy foo.staging -i ~/.ssh/custom_rsa var/log/system.log system.log
+```
+
+```bash 
+loggy foo.staging -c ~/inventory.yml var/log/system.log system.log
+```
+
+## Test
+
+```bash
+go test ./...
+```
