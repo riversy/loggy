@@ -3,16 +3,22 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/totherme/unstructured"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/totherme/unstructured"
 )
 
 type AppConfig struct {
-	ConfigPath, KeyPath, Scope, RemotePath, LocalPath string
-	IsTail, IsHead                                    bool
-	NumOfLines                                        int
+	ConfigPath string
+	KeyPath    string
+	Scope      string
+	RemotePath string
+	LocalPath  string
+	IsTail     bool
+	IsHead     bool
+	NumOfLines int
 }
 
 var appCfg = &AppConfig{}
