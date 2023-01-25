@@ -33,7 +33,7 @@ func initConfig() {
 	flag.IntVar(&appCfg.NumOfLines, "n", 10, "")
 
 	if len(os.Args) != 4 {
-		panic("usage should be the following: loggy [Scope] [remote_file] [local_file]")
+		panic("usage should be the following: loggy [--(tail|head)] [-n 10] <scope> <remote_file> <local_file>")
 	}
 
 	appCfg.Scope = os.Args[1]
