@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"github.com/riversy/loggy/connection"
+	"github.com/riversy/loggy/utils"
+	"github.com/vbauerster/mpb/v8"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/totherme/unstructured"
+	"sync"
 )
 
 type AppConfig struct {
@@ -45,47 +48,49 @@ func initConfig() {
 	appCfg.LocalPath, _ = filepath.Abs(getFullKeyPath(appCfg.LocalPath))
 }
 
-func main() {
-	initConfig()
-
-	hosts := getHosts()
-
-	fmt.Println(hosts)
-}
-
-func getHosts() []string {
-	configYaml, err := os.ReadFile(appCfg.ConfigPath)
-	if err != nil {
-		panic(err)
-	}
-
-	poolData, err := unstructured.ParseYAML(string(configYaml))
-	if err != nil {
-		panic(err)
-	}
-
-	poolPayloadData, err := poolData.GetByPointer(appCfg.Scope)
-	if err != nil {
-		panic(err)
-	}
-
-	if !poolPayloadData.IsList() {
-		panic("scoped value has to be list")
-	}
-
-	hostsList, err := poolPayloadData.ListValue()
-	if err != nil {
-		panic(err)
-	}
-
-	hosts := make([]string, len(hostsList))
-	for i, v := range hostsList {
-		hosts[i] = v.UnsafeStringValue()
-	}
-
-	return hosts
-}
-
 func getFullKeyPath(keyPath string) string {
 	return strings.Replace(keyPath, "~", os.Getenv("HOME"), 1)
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	initConfig()
+
+	hosts := utils.GetHosts(appCfg.ConfigPath, appCfg.Scope)
+
+	var wg sync.WaitGroup
+	p := mpb.NewWithContext(ctx, mpb.WithWaitGroup(&wg))
+
+	for _, uri := range hosts {
+
+		wg.Add(1)
+
+		conn := connection.NewDownloadConnection(
+			uri,
+			appCfg.KeyPath,
+			appCfg.RemotePath,
+			"cat",
+			utils.GetTempFileName(),
+		)
+
+		go func() {
+			for {
+				status := <-conn.StatusCh
+				fmt.Println(status)
+			}
+		}()
+
+		err := conn.Init()
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(conn.TargetPath)
+	}
+
+	fmt.Println(hosts)
+
+	p.Wait()
 }

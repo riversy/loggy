@@ -56,10 +56,5 @@ func NewDownloadConnection(
 		TargetPath: targetPath,
 	}
 
-	err := conn.Init()
-	if err != nil {
-		panic(err)
-	}
-
 	return conn
 }
